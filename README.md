@@ -10,7 +10,7 @@ This module will create templates and fields which are related to functioning co
 2. In admin: Modules > Check for new modules. 
 3. Click *install* for the Contact Form Helper. 
 
-#### How to use ####
+### How to use ###
 	
 To get contact us form in your template use following block of scrip:
 ````````
