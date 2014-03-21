@@ -1,0 +1,418 @@
+<?php
+/**
+ * Class ContactFormHelper
+ *
+ * This module will create templates and fields
+ * which are related to functioning contact form feature.
+ * Idea of this module is simply saving time without
+ * creating fields and templates when it comes to usage.
+ *
+ * contact-form
+ *   - contact_form_name
+ *   - contact_form_company
+ *   - contact_form_telephone
+ *   - contact_form_email
+ *   - contact_form_message
+ *   - add_contact_form_to_page - Checkbox
+ */
+class ContactFormHelper extends WireData implements Module, Saveable {
+
+    /**
+     * Array of form element names.
+     *
+     */
+    protected $formElements;
+
+    /**
+     * getModuleInfo is a module required by all modules to tell ProcessWire about them
+     *
+     * @return array
+     *
+     */
+    public static function getModuleInfo() {
+
+        return array(
+            'title' => 'Contact FormHelper',
+            'version' => 100,
+            'summary' => 'Create relevant fields and templates to enable contact us feature',
+            'singular' => true,
+            'autoload' => true,
+            'requires' => 'FormTemplateProcessor'
+        );
+    }
+
+    /**
+     * Save the object's current state to database.
+     *
+     */
+    public function save() { }
+
+    /**
+     * Get an array of this item's saveable data, should match exact with the table it saves in
+     *
+     */
+    public function getTableData() { }
+
+
+
+    /**
+     * Method to initialize the module.
+     *
+     * While the method is required, if you don't need it, then just leave the implementation blank.
+     *
+     * This is called after ProcessWire's API is fully ready for use and hooks. It is called at the end of the
+     * bootstrap process. This is before PW has started retrieving or rendering a page. If you need to have the
+     * API ready with the $page ready as well, then see the ready() method below this one.
+     *
+     */
+    public function init()
+    {
+        /* init stuff */
+        $this->formElements = array(
+            'contact_form_name',
+            'contact_form_company',
+            'contact_form_telephone',
+            'contact_form_email',
+            'contact_form_message'
+        );
+    }
+
+    /**
+     * Install module
+     */
+    public function ___install() {
+
+        /* ======================================================================== */
+        /* Create contact template and fields                                       */
+        /* ======================================================================== */
+
+        /* fetch the field group named 'contact' */
+        $fg = $this->fieldgroups->get('contact-form');
+
+        if (!$fg->id) {
+            /* Create new field group which is going to relate to our template */
+            $fg = new Fieldgroup();
+            $fg->name = 'contact-form';
+            $fg->add($this->fields->get('title'));
+
+            /* Add additional fields */
+
+            /* Contact form name field */
+            $contactFormName = wire('fields')->get('contact_form_name');
+
+            if (!$contactFormName->id) {
+                $field                  = new Field();
+                $field->type            = 'FieldtypeText';
+                $field->name            = 'contact_form_name';
+                $field->label           = __('Name');
+                /* Set place holder*/
+                $field->set('placeholder', __('Your name'));
+                /* Set HTML strip enable from the input when the form is processed. */
+                $field->set('stripTags', 1);
+                /* Setting max length of characters */
+                $field->set('maxlength', 200);
+                /* Set required */
+                $field->set('required', 1);
+
+                $field->save();
+
+                $this->message("Field 'contact_form_name' added.");
+
+                /* add contact_form_name field into the field group */
+                $fg->add($this->fields->get('contact_form_name'));
+            }
+
+            /* Contact form company field */
+            $contactFormCompany = wire('fields')->get('contact_form_company');
+
+            if (!$contactFormCompany->id) {
+
+                $field                  = new Field();
+                $field->type            = 'FieldtypeText';
+                $field->name            = 'contact_form_company';
+                /* Set place holder*/
+                $field->set('placeholder', __('Company'));
+                /* Set label*/
+                $field->label           = __('Company/Organization');
+                /* Set HTML strip enable from the input when the form is processed. */
+                $field->set('stripTags', 1);
+                /* Setting max length of characters */
+                $field->set('maxlength', 150);
+                $field->save();
+
+                $this->message("Field 'contact_form_company' added.");
+
+                /* add contact_form_company field into the field group */
+                $fg->add($this->fields->get('contact_form_company'));
+            }
+
+            /* Contact form telephone field */
+            $contactFormTelephone = wire('fields')->get('contact_form_telephone');
+
+            if (!$contactFormTelephone->id) {
+
+                $field                  = new Field();
+                $field->type            = 'FieldtypeText';
+                $field->name            = 'contact_form_telephone';
+                $field->label           = __('Contact Number');
+                /* Set place holder*/
+                $field->set('placeholder', '(123) 456-7890');
+                /* Set HTML strip enable from the input when the form is processed. */
+                $field->set('stripTags', 1);
+                /* Setting max length of characters */
+                $field->set('maxlength', 20);
+                /* Set required */
+                $field->set('required', 1);
+
+                $field->save();
+
+                $this->message("Field 'contact_form_telephone' added.");
+
+                /* add contact_form_telephone field into the field group */
+                $fg->add($this->fields->get('contact_form_telephone'));
+            }
+
+            /* Contact form email field */
+            $contactFormEmail = wire('fields')->get('contact_form_email');
+
+            if (!$contactFormEmail->id) {
+
+                $field                  = new Field();
+                $field->type            = 'FieldtypeEmail';
+                $field->name            = 'contact_form_email';
+                $field->label           = __('Email');
+                /* Set place holder*/
+                $field->set('placeholder', __('name@domain.nl'));
+                /* Set required */
+                $field->set('required', 1);
+                $field->save();
+
+                $this->message("Field 'contact_form_email' added.");
+
+                /* add contact_form_email field into the field group */
+                $fg->add($this->fields->get('contact_form_email'));
+            }
+
+            /* Contact form message */
+            $contactFormMessage = wire('fields')->get('contact_form_message');
+
+            if (!$contactFormMessage->id) {
+
+                $field                  = new Field();
+                $field->type            = 'FieldtypeTextarea';
+                $field->name            = 'contact_form_message';
+                $field->label           = __('Your Question / Comment');
+                $field->set('textformatters', array('TextformatterEntities'));
+                /* Set place holder*/
+
+                /* Set HTML strip enable from the input when the form is processed. */
+                $field->set('stripTags', 1);
+                /* Set max length*/
+                $field->set('maxlength', 250);
+                /* Set required */
+                $field->set('required', 1);
+
+                $field->save();
+
+                $this->message("Field 'contact_form_message' added.");
+
+                /* add contact_form_message field into the field group */
+                $fg->add($this->fields->get('contact_form_message'));
+            }
+
+            /* Add contact form to page checkbox */
+            $addContactFormToPage = wire('fields')->get('add_contact_form_to_page');
+
+            if (!$addContactFormToPage->id){
+
+                $field                  = new Field();
+                $field->type            = 'FieldtypeCheckbox';
+                $field->name            = 'add_contact_form_to_page';
+                $field->label           = 'Add contact form to current page';
+                $field->save();
+
+                $this->message("Field 'add_contact_form_to_page' added.");
+            }
+
+            /* Save the field group */
+            $fg->save();
+            $this->message("'contact-form' field group added.");
+        }
+
+        /* Fetch the template named 'contact-form' */
+        $contactFormTemplate = $this->templates->get('contact-form');
+
+        if (!$contactFormTemplate->id) {
+            /* Create new template instance */
+            $contactFormTemplate = new Template();
+            $contactFormTemplate->name = 'contact-form';//Used different name other than file name
+            /* Set template label */
+            $contactFormTemplate->label = 'Contact form';
+
+            $contactFormTemplate->fieldgroup = $fg; // add the field group
+
+            /* Disable child page creation */
+            $contactFormTemplate->set('noChildren', 1);
+
+            /* Disable create pages using the template */
+            $contactFormTemplate->set('noParents', 1);
+
+            $contactFormTemplate->save();
+
+            $this->message("'contact-form' template added.");
+        }
+
+
+
+    }
+
+    /**
+     * Uninstall the module
+     *
+     */
+    public function ___uninstall() {
+
+        /* ======================================================================== */
+        /* Removing Contact form related templates and field group                 */
+        /* ======================================================================== */
+
+        /* Fetch `contact-form` template */
+        $contactFormTemplate = $this->templates->get('contact-form');
+
+        /* Fetch contact-form field group */
+        $contactFormFieldGroup =  $this->fieldgroups->get('contact-form');
+
+        if ($contactFormTemplate->id && $contactFormTemplate->getNumPages() > 0) {
+            /* Meaning that these template been used. So throw an exception would save our life */
+            throw new WireException("Can't uninstall because `contact-form` template been used by some pages.");
+        }else if ($contactFormTemplate->id) {
+            /* Meaning that we can delete our template and field group. Because it was not been used. */
+            wire('templates')->delete($contactFormTemplate);
+            $this->message("`contact-form` template removed.");
+            wire('fieldgroups')->delete($contactFormFieldGroup);
+            $this->message("`contact-form` field group removed.");
+        }
+
+        /* Contact form name field */
+        $contactFormName = wire('fields')->get('contact_form_name');
+        if ($contactFormName->id && $contactFormName->numFieldgroups() > 0) {
+            throw new WireException("Can't remove field `contact_form_name` since it been used on some field groups.");
+        }else {
+            /* Remove field `contact_form_name` */
+            wire('fields')->delete($contactFormName);
+            $this->message("`contact_form_name` field removed.");
+        }
+
+        /* Contact form company field */
+        $contactFormCompany = wire('fields')->get('contact_form_company');
+        if ($contactFormCompany->id && $contactFormCompany->numFieldgroups() > 0) {
+            throw new WireException("Can't remove field `contact_form_company` since it been used on some field groups.");
+        }else {
+            /* Remove field `client_company_url` */
+            wire('fields')->delete($contactFormCompany);
+            $this->message("`client_company_url` field removed.");
+        }
+
+        /* Contact form telephone field */
+        $contactFormTelephone = wire('fields')->get('contact_form_telephone');
+        if ($contactFormTelephone->id && $contactFormTelephone->numFieldgroups() > 0) {
+            throw new WireException("Can't remove field `contact_form_telephone` since it been used on some field groups.");
+        }else {
+            /* Remove field `contact_form_telephone` */
+            wire('fields')->delete($contactFormTelephone);
+            $this->message("`contact_form_telephone` field removed.");
+        }
+        /* Contact form email field */
+        $contactFormEmail = wire('fields')->get('contact_form_email');
+        if ($contactFormEmail->id && $contactFormEmail->numFieldgroups() > 0) {
+            throw new WireException("Can't remove field `contact_form_email` since it been used on some field groups.");
+        }else {
+            /* Remove field `contact_form_email` */
+            wire('fields')->delete($contactFormEmail);
+            $this->message("`contact_form_email` field removed.");
+        }
+
+        /* Contact form message */
+        $contactFormMessage = wire('fields')->get('contact_form_message');
+        if ($contactFormMessage->id && $contactFormMessage->numFieldgroups() > 0) {
+            throw new WireException("Can't remove field `contact_form_message` since it been used on some field groups.");
+        }else {
+            /* Remove field `contact_form_message` */
+            wire('fields')->delete($contactFormMessage);
+            $this->message("`contact_form_message` field removed.");
+        }
+
+        /* contact form to page checkbox */
+        $addContactFormToPage = wire('fields')->get('add_contact_form_to_page');
+        if ($addContactFormToPage->id && $addContactFormToPage->numFieldgroups() > 0) {
+            throw new WireException("Can't remove field `add_contact_form_to_page` since it been used on some field groups.");
+        }else {
+            /* Remove field `add_contact_form_to_page` */
+            wire('fields')->delete($addContactFormToPage);
+            $this->message("`add_contact_form_to_page` field removed.");
+        }
+    }
+
+    /**
+     * Render contact us form.
+     *
+     * @param $templates Templates instance
+     * @param $modules Modules instance
+     * @param $page Page instance
+     * @return string Html formatted form
+     */
+    public function getContactUsForm() {
+        $content     = '';
+        $form = wire('modules')->get('FormTemplateProcessor');
+        $form->template = wire('templates')->get('contact-form'); // required
+        $form->requiredFields = array('contact_form_name', 'contact_form_email', 'contact_form_telephone', 'contact_form_message');
+        $form->email = wire('config')->adminEmail; // optional, sends form as email
+        $form->parent = wire('page'); // optional, saves form as page
+        $content .= $form->render(); // draw form or process submitted form
+
+        return $content;
+    }
+
+    /**
+     * Render contact us form when `add_contact_form_on_page`field enabled
+     *
+     * @param $templates Templates instance
+     * @param $modules Modules instance
+     * @param $page Page instance
+     * @return string Html formatted form
+     */
+    public function getConditionalContactUsForm() {
+
+        $page = wire('page');
+
+        /*
+         * If page doest not contain the field add_contact_form_to_page or unchecked
+         * Just return a empty quote.
+         * Else return full contact form markup
+         */
+        if (!$page->add_contact_form_to_page) return '';
+
+        /* Form field array */
+        $formFields = $this->formElements;
+
+        $content     = '';
+        $form = wire('modules')->get('FormTemplateProcessor');
+        $form->template = wire('templates')->get('contact-form'); // required
+        $form->requiredFields = $formFields;
+        $form->email = wire('config')->adminEmail; // optional, sends form as email
+        $form->parent = $page; // optional, saves form as page
+        $content .= $form->render(); // draw form or process submitted form
+
+        return $content;
+    }
+
+    /**
+     * Return form element names
+     * @return Array form elements name
+     */
+    protected function getFormElements()
+    {
+        return $this->formElements;
+    }
+
+}
